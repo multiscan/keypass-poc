@@ -1,0 +1,199 @@
+var username = false;
+var privkey  = false;
+var keys    = false;
+var docs_db = new PouchDB("http://localhost:5984/secrets");
+var users_db = new PouchDB("http://localhost:5984/users");
+var remoteCouch = true;
+
+var doc_details = new Vue({
+  el: '#doc-details',
+  data: {
+    title: "",
+    content: ""
+  },
+});
+
+var docs = new Vue({
+  el: '#doc-list',
+  data: {
+    docs: []
+  },
+  methods: {
+    show_details: function(doc) {
+      doc_details.title = doc.doc.title;
+      doc_details.content = privkey.decrypt(doc.doc.content[username]);
+    }
+  }
+});
+
+
+var loadKeys = new Promise(function(resolve, reject) {
+  if (keys) {
+    resolve(keys);
+  } else {
+    users_db.allDocs({
+      include_docs: true
+    }).then(function(response){
+      keys = {};
+      response.rows.forEach(function(r){
+        var k = r.doc['key'].join("\n");
+        var c = new JSEncrypt();
+        c.setPublicKey(k);
+        keys[r.doc['_id']] = c;
+      });
+      resolve(keys);
+    }).catch(function(err) {
+      console.log("There was an error loading the users: " + err);
+      reject(err);
+    });
+  }
+});
+
+// This is supposed to show a nicer notification than a standard alert popup
+function notification(text, type="warning", duration=10) {
+  // messageDom = $('')
+  // messageDom.content(text)
+  console.log(text)
+}
+
+function details_for(doc) {
+  doc_details.title = doc.doc.title
+  doc_details.content = doc.doc.content
+}
+
+// Load the documents from the database and display them
+function documentsIndex() {
+  docs_db.allDocs({
+    include_docs: true
+  }).then(function(response){
+    doclist=[];
+    response.rows.forEach(function(r){
+      doclist.push(r);
+    });
+    docs._data.docs=doclist;
+  }).catch(function(err){
+    console.log("There were an issue loading the documents from the database:" + err);
+  });
+}
+
+// Create a new document and save it into the DB
+// TODO content should be encrypted and key should be absent
+function documentCreate(title, text) {
+  loadKeys.then(function(keys){
+    content = {}
+    for (var u in keys) {
+      var v = keys[u].encrypt(text);
+      content[u] = v;
+    }
+    var doc = {
+      _id: title,
+      title: title,
+      content: content
+    }
+    docs_db.put(doc).then(function(response) {
+      notification("Document succesfully created");
+      clearDocumentForm();
+      docs.docs.push(doc);
+    }).catch(function(err) {
+      notification("Could no create the Document. Probably one is already present.")
+    });
+  })
+}
+
+// Initialise a sync with the remote server
+function sync() {
+  // TODO
+}
+
+// There was some form or error syncing
+function syncError() {
+  syncDom.setAttribute('data-sync-state', 'error');
+}
+
+function clearDocumentForm() {
+  console.log("clearDocumentForm called");
+  var form = $("#new-item-form");
+  form.find('input[name="title"]').val("");
+  form.find('textarea[name="content"]').val("");
+}
+
+// This is called upon submission of the new document form
+function createDocumentHandler(event){
+  event.stopPropagation();
+  event.preventDefault();
+  var form=$(event.target);
+  var titleDom   = form.find('input[name="title"]');
+  var contentDom = form.find('textarea[name="content"]');
+  var title   = titleDom.val();
+  var content = contentDom.val();
+  // TODO: add validation
+  documentCreate(title, content);
+}
+
+// This is called upon submission of the new user form
+// Stores username and private key in the browser memory 
+// Stores username and public key in the remote sorage
+function setupUserHandler(event){
+  console.debug("setupUserHandler");
+  event.stopPropagation();
+  event.preventDefault();
+
+  var form=$(event.target);
+  var usernameDom   = form.find('input[name="username"]');
+  var privkeyDom = form.find('textarea[name="privkey"]');
+  var pubkeyDom = form.find('textarea[name="pubkey"]');
+  var myusername = usernameDom.val();
+  var myprivkey = privkeyDom.val();
+  var mypubkey  = pubkeyDom.val();
+
+  var user = {
+    "_id": myusername,
+    "key": mypubkey.split("\n")
+  }
+  users_db.put(user).then(function(response) {
+    notification("User Succesfully created");
+    // store private user's info into local storage
+    localStorage.setItem("username", myusername);
+    localStorage.setItem("privkey", myprivkey);
+
+    setupUser();
+
+    $("#usersetupModal").modal('hide');
+    form.find('input[name="username"]').val("");
+    form.find('textarea[name="privkey"]').val("");
+    form.find('textarea[name="pubkey"]').val("");
+  }).catch(function(err) {
+    // TODO
+    console.debug("Could noy create the User. Probably one is already present.")
+  });
+}
+
+function addEventListeners() {
+  $("#new-item-form").on('submit', createDocumentHandler);
+  $("#usersetup-form").on('submit', setupUserHandler);
+}
+
+// Set username and privkey for current user from browser internal storage.
+// If no info is found, shows a modal windows where the user can enter his data
+function setupUser() {
+  username = localStorage.getItem("username");
+  if (!username) {
+    $('#usersetupModal').modal('show');
+  } else {
+    privkey = new JSEncrypt();
+    privkey.setPrivateKey(localStorage.getItem("privkey"));
+    // TODO
+    console.debug("Write the username in the gui somewhere...");
+  }
+}
+
+$(document).ready(function(){
+  addEventListeners();
+  setupUser();
+
+  documentsIndex();
+
+  if (remoteCouch) {
+    sync();
+  }
+})
