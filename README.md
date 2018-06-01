@@ -13,6 +13,13 @@ The application does not require any backend framework to work. It only consists
 ### Configuration
 The couchdb server address as well as the name of the databases is currently hardcoded in `app.js`. Two databases are used: one for the users, and one for the secrets.
 
+## References
+ - [JS Encrypt](https://github.com/travist/jsencrypt) the JS library used for encrypting the documents;
+ - [Pauchdb](https://pouchdb.com) the JS library used for the backend storage;
+ - [Couchdb](http://couchdb.apache.org) the backend storage;
+ - [JQuery](https://jquery.com);
+ - [Bootstrap](https://getbootstrap.com).
+
 ## TODOs
 The list is too long... 
 

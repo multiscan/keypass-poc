@@ -1,9 +1,16 @@
+// ----------------------------------------------- Settings
+var local_docs_db_name = "secrets";
+var local_users_db_name = "users";
+var remote_docs_db_url = "http://localhost:5984/secrets";
+var remote_users_db_url = "http://localhost:5984/users";
+// -----------------------------------------------/Settings
+
 var username = false;
 var privkey  = false;
 var keys    = false;
-var docs_db = new PouchDB("http://localhost:5984/secrets");
-var users_db = new PouchDB("http://localhost:5984/users");
-var remoteCouch = true;
+
+var docs_db = new PouchDB(local_docs_db_name);
+var users_db = new PouchDB(local_users_db_name);
 
 var doc_details = new Vue({
   el: '#doc-details',
@@ -26,7 +33,6 @@ var docs = new Vue({
   }
 });
 
-
 var loadKeys = new Promise(function(resolve, reject) {
   if (keys) {
     resolve(keys);
@@ -48,6 +54,42 @@ var loadKeys = new Promise(function(resolve, reject) {
     });
   }
 });
+
+function db_sync() {
+  var opts = {
+    live: true,
+    retry: true
+  }
+  var docs_db_sync = docs_db.sync(remote_docs_db_url, opts
+  ).on('change', function(info) {
+    console.log("docs_db_sync change: " + info);
+  }).on('paused', function(err) {
+    console.log("docs_db_sync paused: " + err);
+  }).on('active', function() {
+    console.log("docs_db_sync active: ");
+  }).on('denied', function(err) {
+    console.log("docs_db_sync denied: " + err);
+  }).on('complete', function(info) {
+    console.log("docs_db_sync complete: " + info);
+  }).on('error', function(err) {
+    console.log("docs_db_sync error: " + err);
+  });
+
+  var users_db_sync = users_db.sync(remote_users_db_url, opts
+  ).on('change', function(info) {
+    console.log("users_db_sync change: " + info);
+  }).on('paused', function(err) {
+    console.log("users_db_sync paused: " + err);
+  }).on('active', function() {
+    console.log("users_db_sync active: ");
+  }).on('denied', function(err) {
+    console.log("users_db_sync denied: " + err);
+  }).on('complete', function(info) {
+    console.log("users_db_sync complete: " + info);
+  }).on('error', function(err) {
+    console.log("users_db_sync error: " + err);
+  });
+}
 
 // This is supposed to show a nicer notification than a standard alert popup
 function notification(text, type="warning", duration=10) {
@@ -188,12 +230,8 @@ function setupUser() {
 }
 
 $(document).ready(function(){
+  db_sync();
   addEventListeners();
   setupUser();
-
   documentsIndex();
-
-  if (remoteCouch) {
-    sync();
-  }
 })
