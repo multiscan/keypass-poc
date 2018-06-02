@@ -23,12 +23,12 @@ var doc_details = new Vue({
 var docs = new Vue({
   el: '#doc-list',
   data: {
-    docs: []
+    items: [],
   },
   methods: {
     show_details: function(doc) {
-      doc_details.title = doc.doc.title;
-      doc_details.content = privkey.decrypt(doc.doc.content[username]);
+      doc_details.title = doc.title;
+      doc_details.content = privkey.decrypt(doc.content[username]);
     }
   }
 });
@@ -98,21 +98,14 @@ function notification(text, type="warning", duration=10) {
   console.log(text)
 }
 
-function details_for(doc) {
-  doc_details.title = doc.doc.title
-  doc_details.content = doc.doc.content
-}
-
-// Load the documents from the database and display them
+// Load the documents from the database into the vue model so they get dieplayed
 function documentsIndex() {
   docs_db.allDocs({
     include_docs: true
   }).then(function(response){
-    doclist=[];
     response.rows.forEach(function(r){
-      doclist.push(r);
+      docs.items.push(r.doc)
     });
-    docs._data.docs=doclist;
   }).catch(function(err){
     console.log("There were an issue loading the documents from the database:" + err);
   });
@@ -121,7 +114,9 @@ function documentsIndex() {
 // Create a new document and save it into the DB
 // TODO content should be encrypted and key should be absent
 function documentCreate(title, text) {
+  console.debug("documentCreate 1");
   loadKeys.then(function(keys){
+    console.log("documentCreate 2");
     content = {}
     for (var u in keys) {
       var v = keys[u].encrypt(text);
@@ -134,10 +129,12 @@ function documentCreate(title, text) {
     }
     docs_db.put(doc).then(function(response) {
       notification("Document succesfully created");
+      console.debug("Document succesfully created")
       clearDocumentForm();
-      docs.docs.push(doc);
+      docs.items.push(doc);
     }).catch(function(err) {
       notification("Could no create the Document. Probably one is already present.")
+      console.debug("Could no create the Document. Probably one is already present.")
     });
   })
 }
@@ -161,6 +158,7 @@ function clearDocumentForm() {
 
 // This is called upon submission of the new document form
 function createDocumentHandler(event){
+  console.debug("createDocumentHandler");
   event.stopPropagation();
   event.preventDefault();
   var form=$(event.target);

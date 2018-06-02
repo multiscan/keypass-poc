@@ -20,8 +20,8 @@
       <div class='row'>
         <div class='col-sm'>
           <ul id="doc-list" class='list-group list-group-flush'>
-            <li v-for="doc in docs" class='list-group-item'>
-              <span>{{ doc.doc.title }}</span>
+            <li v-for="doc in items" class='list-group-item'>
+              <span>{{ doc.title }}</span>
               <button class="btn btn-primary btn-sm float-right" type="button" v-on:click="show_details(doc)">Show</button>
             </li>
           </ul>
