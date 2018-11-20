@@ -5,7 +5,10 @@ jsfiles := $(patsubst %,dist/%.js,$(jslibs))
 cssfiles := dist/bootstrap.css 
 
 all: $(jsfiles) $(cssfiles)
-	python -m SimpleHTTPServer
+	# python 3:
+	python3 -m http.server
+	# python 2:
+	# python -m SimpleHTTPServer
 
 install: $(cssfiles)
 

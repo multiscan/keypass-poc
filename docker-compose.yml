@@ -1,0 +1,26 @@
+# run with: docker-compose up -d
+# The app server will be on http://localhost:8000/
+# The couchdb admin interface will be on http://localhost:5984/_utils/
+version: "3"
+
+services:
+  couch:
+    image: couchdb:latest
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb-/opt/couchdb/data
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=1234
+
+  web:
+    image: sebp/lighttpd:latest
+    ports: 
+      - "8000:80"
+    volumes: 
+      - .:/var/www/localhost/htdocs
+
+volumes:
+  db-data:
+    driver: local
