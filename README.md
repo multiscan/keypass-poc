@@ -21,9 +21,10 @@ The couchdb server address as well as the name of the databases is currently har
  - [Bootstrap](https://getbootstrap.com).
 
 ## TODOs
-  - Add couchdb configuration (e.g. CORS enable) in compose 
+  - Add couchdb configuration (e.g. CORS enable) in compose
+  - Editing secrets! 
   - Should we encrypt the documents only once with the same (symmetric?) key ? (and keep the key encrypted with the public key of each user)  
   - Introduce an ACL model storing the encryption key common to all docs in that ACL.
-
+  - Option for auto generating pub/priv key for new users
 
 ## Testing:
