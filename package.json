@@ -1,0 +1,40 @@
+{
+  "name": "keypass-poc",
+  "version": "0.0.1",
+  "description": "Pass keys with just a browser (and your private key that you remember by heart)",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/multiscan/keypass-poc.git"
+  },
+  "keywords": [
+    "JSCrypt",
+    "password",
+    "stash"
+  ],
+  "author": "EPFL Dojo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/multiscan/keypass-poc/issues"
+  },
+  "homepage": "https://github.com/multiscan/keypass-poc#readme",
+  "dependencies": {
+    "bootstrap": "^4.1.3",
+    "browserify": "^16.2.3",
+    "browserify-middleware": "^8.1.1",
+    "express": "^4.16.4",
+    "jquery": "^3.3.1",
+    "jsencrypt": "^3.0.0-rc.1",
+    "popper.js": "^1.14.6",
+    "pouchdb": "^7.0.0",
+    "pouchdb-find": "^7.0.0",
+    "vue": "^2.5.17"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.7"
+  }
+}

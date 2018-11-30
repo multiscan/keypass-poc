@@ -1,3 +1,9 @@
+const $=require("jquery");
+require("bootstrap");
+const JSEncrypt=require("jsencrypt").JSEncrypt;
+const PouchDB=require("pouchdb");
+const Vue=require("vue/dist/vue.js")
+
 // ----------------------------------------------- Settings
 var local_docs_db_name = "secrets";
 var local_users_db_name = "users";
